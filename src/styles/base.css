@@ -13,3 +13,17 @@
   padding: 0.5rem;
   overflow: hidden;
 }
+
+/* Badge de glisser : rendu hors écran puis capturé par setDragImage. */
+.archive-navigator-drag-badge {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  background: #ff6400;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}

@@ -9,6 +9,9 @@
   import { documentLabel, subtypeLabel, t } from "../util/i18n";
   import { matchScore, normalize } from "../util/search";
   import { clickMode } from "../util/selection";
+  import { dropOnFolder } from "../services/drop";
+  import { buildPayload, parsePayload, payloadUuids } from "../util/drop";
+  import { dnd, setDragBadge } from "./dnd.svelte";
   import ActionBar from "./ActionBar.svelte";
   import ActionDialog from "./ActionDialog.svelte";
   import FolderTree from "./FolderTree.svelte";
@@ -25,6 +28,8 @@
   let query = $state("");
   let activeUuid = $state<string | null>(null);
   let pending = $state<ActionAvailability | null>(null);
+  /** Nombre d'éléments à l'origine de l'action en attente (sélection ou dépôt). */
+  let pendingCount = $state(0);
   let listEl = $state<HTMLElement>();
 
   $effect(() => {
@@ -140,7 +145,10 @@
 
   function openTrashDialog() {
     const trash = availableActions(selectedEntries, game.user.isGM).find((a) => a.action.id === "trash");
-    if (trash && !trash.reason) pending = trash;
+    if (trash && !trash.reason) {
+      pendingCount = selectedEntries.length;
+      pending = trash;
+    }
   }
 
   function moveActive(delta: number, extend: boolean) {
@@ -178,11 +186,50 @@
   }
 
   function onDragStart(event: DragEvent, entry: IndexEntry) {
-    // Format natif de Foundry : la ligne se dépose sur le canevas, une fiche ou un journal.
-    event.dataTransfer?.setData(
-      "text/plain",
-      JSON.stringify({ type: entry.documentName, uuid: entry.uuid }),
-    );
+    // Format natif de Foundry (type + uuid), enrichi de la sélection entière
+    // quand la ligne saisie en fait partie.
+    const payload = buildPayload(entry, selectedEntries);
+    event.dataTransfer?.setData("text/plain", JSON.stringify(payload));
+    const count = payload.uuids?.length ?? 1;
+    if (count > 1) setDragBadge(event, t("Drop.Badge", { count }));
+  }
+
+  function readDrop(event: DragEvent) {
+    return parsePayload(event.dataTransfer?.getData("text/plain"));
+  }
+
+  function dropTarget(id: string) {
+    return {
+      ondragover: (event: DragEvent) => {
+        event.preventDefault();
+        dnd.over = id;
+      },
+      ondragleave: () => {
+        if (dnd.over === id) dnd.over = null;
+      },
+    };
+  }
+
+  function onFolderDrop(targetFolderId: string | null, event: DragEvent) {
+    event.preventDefault();
+    dnd.over = null;
+    const payload = readDrop(event);
+    if (payload) dropOnFolder(payload, { folderId: targetFolderId, documentName });
+  }
+
+  async function onTrashDrop(event: DragEvent) {
+    event.preventDefault();
+    dnd.over = null;
+    const payload = readDrop(event);
+    if (!payload) return;
+    const entries = payloadUuids(payload)
+      .map((uuid) => indexService.find(uuid))
+      .filter((e): e is IndexEntry => !!e);
+    const trash = availableActions(entries, game.user.isGM).find((a) => a.action.id === "trash");
+    if (trash && !trash.reason) {
+      pendingCount = entries.length;
+      pending = trash;
+    }
   }
 
   async function openEntry(entry: IndexEntry) {
@@ -224,7 +271,14 @@
         </li>
       {/each}
       <li class="an-trash-link">
-        <button type="button" class:active={view === "trash"} onclick={() => (view = "trash")}>
+        <button
+          type="button"
+          class:active={view === "trash"}
+          class:drop-target={dnd.over === "trash"}
+          onclick={() => (view = "trash")}
+          {...dropTarget("trash")}
+          ondrop={onTrashDrop}
+        >
           <i class="fa-solid fa-trash-can"></i>
           <span>{t("Trash.Title")}</span>
           <span class="an-count">{trashService.batches.reduce((sum, b) => sum + b.count, 0)}</span>
@@ -238,12 +292,22 @@
           type="button"
           class="an-all-folders"
           class:active={folderId === null}
+          class:drop-target={dnd.over === "root"}
+          title={t("Drop.RootHint")}
           onclick={() => (folderId = null)}
+          {...dropTarget("root")}
+          ondrop={(e) => onFolderDrop(null, e)}
         >
           <i class="fa-solid fa-folder-tree"></i>
           {t("Folders.All")}
         </button>
-        <FolderTree {folders} parentId={null} selected={folderId} onselect={(id) => (folderId = id)} />
+        <FolderTree
+          {folders}
+          parentId={null}
+          selected={folderId}
+          onselect={(id) => (folderId = id)}
+          ondropfolder={(id, e) => onFolderDrop(id, e)}
+        />
       </div>
     {/if}
   </nav>
@@ -270,7 +334,10 @@
         <ActionBar
           entries={selectedEntries}
           {hiddenCount}
-          onaction={(a) => (pending = a)}
+          onaction={(a) => {
+            pendingCount = selectedEntries.length;
+            pending = a;
+          }}
           onclear={() => selection.clear()}
         />
       {/if}
@@ -337,7 +404,7 @@
   {#if pending}
     <ActionDialog
       availability={pending}
-      selectedCount={selectedEntries.length}
+      selectedCount={pendingCount}
       onclose={() => (pending = null)}
     />
   {/if}
@@ -376,6 +443,10 @@
   button.active {
     background: var(--an-accent-bg);
     border-color: var(--an-accent);
+  }
+  button.drop-target {
+    border: 1px dashed var(--an-accent);
+    background: var(--an-accent-bg);
   }
   .an-types {
     list-style: none;

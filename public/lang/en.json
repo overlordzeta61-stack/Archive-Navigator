@@ -83,6 +83,14 @@
       "RestoreFailed": "Restore failed, see the console.",
       "Purge": "Delete permanently",
       "PurgeConfirm": "{count} entry(ies) will be permanently deleted. This cannot be undone."
+    },
+    "Drop": {
+      "Badge": "{count} entries",
+      "Done": "{count} entry(ies) moved or imported.",
+      "Ignored": "{count} entry(ies) skipped: other type, already there, or not movable.",
+      "Failed": "Drop failed, see the console.",
+      "ItemsAdded": "{count} item(s) added to {actor}.",
+      "RootHint": "Drop here to take entries out of their folder."
     }
   }
 }

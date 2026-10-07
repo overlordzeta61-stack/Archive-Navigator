@@ -3,6 +3,7 @@ import { getActions, registerAction } from "./actions/registry";
 import { registerBuiltinActions } from "./actions/builtin";
 import { openNavigator } from "./app/ArchiveNavigatorApp";
 import { MODULE_ID } from "./constants";
+import { onDropActorSheetData, onDropCanvasData } from "./services/drop";
 import { indexService } from "./services/index.svelte";
 import { trashService } from "./services/trash.svelte";
 import { registerSettings } from "./settings";
@@ -36,6 +37,10 @@ Hooks.once("ready", () => {
   indexService.start();
   trashService.purgeExpired().catch((error) => console.error(error));
 });
+
+// Dépôt de plusieurs éléments glissés depuis le navigateur.
+Hooks.on("dropCanvasData", onDropCanvasData);
+Hooks.on("dropActorSheetData", onDropActorSheetData);
 
 // Bouton d'accès dans l'en-tête de chaque onglet de la barre latérale.
 Hooks.on("renderDocumentDirectory", (_app: unknown, html: HTMLElement) => {

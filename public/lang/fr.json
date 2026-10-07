@@ -83,6 +83,14 @@
       "RestoreFailed": "La restauration a échoué, voir la console.",
       "Purge": "Supprimer définitivement",
       "PurgeConfirm": "{count} élément(s) seront supprimés définitivement. Cette opération est irréversible."
+    },
+    "Drop": {
+      "Badge": "{count} éléments",
+      "Done": "{count} élément(s) déplacé(s) ou importé(s).",
+      "Ignored": "{count} élément(s) ignoré(s) : autre type, déjà en place ou déplacement impossible.",
+      "Failed": "Le dépôt a échoué, voir la console.",
+      "ItemsAdded": "{count} objet(s) ajouté(s) à {actor}.",
+      "RootHint": "Déposer ici pour sortir les éléments de leur dossier."
     }
   }
 }

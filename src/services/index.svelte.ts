@@ -83,6 +83,11 @@ class IndexService {
     this.compendiaStatus = "ready";
   }
 
+  /** Retrouve une entrée du monde ou d'un compendium déjà indexé. */
+  find(uuid: string): IndexEntry | undefined {
+    return this.world.find((e) => e.uuid === uuid) ?? this.compendia.find((e) => e.uuid === uuid);
+  }
+
   #scheduleRebuild(): void {
     if (this.#timer) clearTimeout(this.#timer);
     this.#timer = setTimeout(() => {

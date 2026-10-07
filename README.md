@@ -12,7 +12,11 @@ La conception complète et la feuille de route sont dans
 - Portée : monde, compendiums (lecture seule) ou les deux.
 - Recherche floue, insensible aux accents et à la casse.
 - Aperçu ; ouverture de la fiche par double-clic ou Entrée.
-- Glisser une ligne vers le canevas, une fiche ou un journal.
+- Glisser-déposer : une ligne ou toute la sélection vers un dossier, la
+  racine ou la corbeille ; un dossier dans un autre ; depuis la barre
+  latérale ou un compendium vers un dossier du navigateur ; plusieurs
+  acteurs vers le canevas (posés en grille) ; plusieurs objets vers une
+  fiche d'acteur.
 - Sélection multiple (clic, `Ctrl`, `Maj`, `Ctrl+A`, cases à cocher) qui
   persiste quand on change de filtre.
 - Actions groupées : supprimer (vers la corbeille), déplacer vers un

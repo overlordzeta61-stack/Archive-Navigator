@@ -95,18 +95,29 @@ endroit.
 
 | Source → Cible | Effet |
 |---|---|
-| Sélection → dossier du navigateur | Déplacement groupé |
-| Acteurs → canevas | Tokens posés en grille autour du point de dépôt |
-| Objets → fiche d'acteur | Ajout à l'inventaire |
-| Document → journal | Lien `@UUID` |
-| Entrées de compendium → dossier du monde | Import (copie) |
-| Barre latérale Foundry → navigateur | Accepté |
+| Ligne ou sélection → dossier du navigateur | Déplacement groupé |
+| Ligne ou sélection → « Tous les dossiers » | Sortie des dossiers (racine) |
+| Entrées de compendium → dossier du navigateur | Import (copie) dans ce dossier |
+| Dossier → dossier du navigateur | Rattachement (les cycles sont refusés) |
+| Ligne ou sélection → « Corbeille » | Confirmation de mise en corbeille |
+| Barre latérale ou compendium Foundry → dossier du navigateur | Déplacement ou import |
+| Plusieurs acteurs → canevas | Tokens posés en grille autour du point de dépôt (acteurs de compendium importés d'abord) |
+| Plusieurs objets → fiche d'acteur | Tous ajoutés à l'inventaire |
+| Un seul élément → canevas, fiche, journal | Comportement natif de Foundry |
 
-- Un élément seul : format natif `{ type, uuid }`. Plusieurs : format étendu
-  `{ type: "ArchiveNavigatorSelection", uuids: [...] }` compris par nos cibles.
-- Badge « N éléments » sous le curseur, zones de dépôt surlignées, dépliage
-  automatique des dossiers au survol.
-- Alternative clavier : menu « Déplacer vers… » avec recherche de dossier.
+- **Format** : les données glissées gardent le format natif `{ type, uuid }`
+  (l'élément saisi) et ajoutent `uuids` (toute la sélection) quand la ligne
+  saisie fait partie d'une sélection de plusieurs éléments. Une cible qui ne
+  connaît pas `uuids` reçoit donc le premier élément au lieu d'une erreur.
+- Le canevas et les fiches d'acteur gèrent `uuids` via les crochets
+  `dropCanvasData` et `dropActorSheetData`.
+- Seuls les éléments du type du dossier cible sont pris ; les autres sont
+  ignorés et signalés.
+- Badge « N éléments » sous le curseur, cibles surlignées, dépliage
+  automatique d'un dossier après 600 ms de survol.
+- Alternative clavier : l'action « Déplacer » avec recherche de dossier.
+- Limite connue : glisser plusieurs éléments dans un journal ne crée qu'un
+  lien (celui de l'élément saisi).
 
 ### 4.5 Doublons (étape 5)
 **Détection**, par type, avec des critères combinables :
@@ -163,7 +174,9 @@ peuvent être supprimés.
    Dupliquer, Droits, Importer (depuis un compendium) ; avertissements
    d'utilisation ; vue Corbeille avec restauration totale ou partielle et
    purge automatique.
-4. Glisser-déposer complet.
+4. ✅ **Glisser-déposer** : vers les dossiers, la racine, la corbeille ;
+   dossiers entre eux ; depuis la barre latérale et les compendiums ;
+   plusieurs acteurs vers le canevas, plusieurs objets vers une fiche.
 5. Doublons.
 6. Recherche avancée avec l'adaptateur dnd5e.
 7. Ensuite : tags et collections virtuelles, palette `Ctrl+K`, vue tableau,
