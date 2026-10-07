@@ -1,0 +1,23 @@
+{
+  "ARCHIVE_NAVIGATOR": {
+    "Title": "Archive Navigator",
+    "Keybindings": { "Open": "Ouvrir Archive Navigator" },
+    "Errors": { "GMOnly": "Archive Navigator est réservé au MJ." },
+    "Source": { "World": "Monde", "Compendia": "Compendiums", "All": "Tout" },
+    "Folders": { "All": "Tous les dossiers" },
+    "Search": {
+      "Placeholder": "Rechercher…",
+      "Count": "{count} résultat(s)",
+      "LoadingCompendia": "Indexation des compendiums…",
+      "Truncated": "Seuls les {count} premiers résultats sont affichés : affinez la recherche."
+    },
+    "Preview": {
+      "Type": "Type",
+      "Source": "Source",
+      "Folder": "Dossier",
+      "Open": "Ouvrir",
+      "View": "Afficher",
+      "Empty": "Sélectionnez un élément pour l'aperçu."
+    }
+  }
+}

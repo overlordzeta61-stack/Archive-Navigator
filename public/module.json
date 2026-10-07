@@ -1,0 +1,34 @@
+{
+  "id": "archive-navigator",
+  "title": "Archive Navigator",
+  "description": "Navigateur unifié pour le MJ : parcourir, rechercher, sélectionner en masse, déplacer, dédoublonner et nettoyer le contenu du monde.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "overlordzeta61"
+    }
+  ],
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.365"
+  },
+  "esmodules": [
+    "scripts/archive-navigator.js"
+  ],
+  "styles": [
+    "styles/archive-navigator.css"
+  ],
+  "languages": [
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/overlordzeta61-stack/Archive-Navigator"
+}

@@ -1,0 +1,12 @@
+/* Variables partagées ; s'appuient sur le thème Foundry quand il les fournit. */
+.archive-navigator {
+  --an-border: var(--color-border, rgba(127, 127, 127, 0.35));
+  --an-accent: var(--color-warm-1, #ff6400);
+  --an-accent-bg: rgba(255, 100, 0, 0.18);
+  --an-hover-bg: rgba(127, 127, 127, 0.15);
+}
+
+.archive-navigator .window-content {
+  padding: 0.5rem;
+  overflow: hidden;
+}
