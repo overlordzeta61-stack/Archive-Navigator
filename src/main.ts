@@ -1,9 +1,16 @@
 import "./styles/base.css";
+import { getActions, registerAction } from "./actions/registry";
+import { registerBuiltinActions } from "./actions/builtin";
 import { openNavigator } from "./app/ArchiveNavigatorApp";
 import { MODULE_ID } from "./constants";
 import { indexService } from "./services/index.svelte";
+import { trashService } from "./services/trash.svelte";
+import { registerSettings } from "./settings";
 
 Hooks.once("init", () => {
+  registerSettings();
+  registerBuiltinActions();
+
   game.keybindings.register(MODULE_ID, "open", {
     name: "ARCHIVE_NAVIGATOR.Keybindings.Open",
     editable: [{ key: "KeyA", modifiers: ["Control", "Shift"] }],
@@ -15,11 +22,19 @@ Hooks.once("init", () => {
   });
 
   const module = game.modules.get(MODULE_ID);
-  if (module) module.api = { open: openNavigator, index: indexService };
+  if (module) module.api = {
+    open: openNavigator,
+    index: indexService,
+    trash: trashService,
+    registerAction,
+    getActions,
+  };
 });
 
 Hooks.once("ready", () => {
-  if (game.user.isGM) indexService.start();
+  if (!game.user.isGM) return;
+  indexService.start();
+  trashService.purgeExpired().catch((error) => console.error(error));
 });
 
 // Bouton d'accès dans l'en-tête de chaque onglet de la barre latérale.

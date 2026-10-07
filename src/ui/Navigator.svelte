@@ -1,23 +1,49 @@
 <script lang="ts">
+  import type { ActionAvailability } from "../actions/registry";
+  import { availableActions } from "../actions/registry";
   import { DOCUMENT_ICONS, DOCUMENT_TYPES, type DocumentType } from "../constants";
   import { indexService } from "../services/index.svelte";
+  import { selection } from "../services/selection.svelte";
+  import { trashService } from "../services/trash.svelte";
   import type { IndexEntry, SourceScope } from "../services/types";
   import { documentLabel, subtypeLabel, t } from "../util/i18n";
   import { matchScore, normalize } from "../util/search";
+  import { clickMode } from "../util/selection";
+  import ActionBar from "./ActionBar.svelte";
+  import ActionDialog from "./ActionDialog.svelte";
   import FolderTree from "./FolderTree.svelte";
   import Preview from "./Preview.svelte";
+  import TrashView from "./TrashView.svelte";
 
   /** Au-delà, on demande d'affiner plutôt que d'afficher des milliers de lignes. */
   const MAX_ROWS = 500;
 
+  let view = $state<"browse" | "trash">("browse");
   let documentName = $state<DocumentType>("Actor");
   let scope = $state<SourceScope>("world");
   let folderId = $state<string | null>(null);
   let query = $state("");
   let activeUuid = $state<string | null>(null);
+  let pending = $state<ActionAvailability | null>(null);
+  let listEl = $state<HTMLElement>();
 
   $effect(() => {
     if (scope !== "world") indexService.loadCompendia();
+  });
+
+  $effect(() => {
+    trashService.refresh();
+  });
+
+  /** Tous les éléments connus, par UUID. */
+  const byUuid = $derived(
+    new Map([...indexService.world, ...indexService.compendia].map((e) => [e.uuid, e])),
+  );
+
+  // Les éléments supprimés (ou mis en corbeille) quittent la sélection.
+  $effect(() => {
+    const known = byUuid;
+    selection.prune((uuid) => known.has(uuid));
   });
 
   const pool = $derived.by(() => {
@@ -65,7 +91,22 @@
     return scored.map((s) => s.entry);
   });
 
-  const active = $derived(results.find((e) => e.uuid === activeUuid) ?? null);
+  const visible = $derived(results.slice(0, MAX_ROWS));
+  const visibleUuids = $derived(visible.map((e) => e.uuid));
+
+  const selectedEntries = $derived(
+    [...selection.ids].map((uuid) => byUuid.get(uuid)).filter((e): e is IndexEntry => !!e),
+  );
+  const hiddenCount = $derived.by(() => {
+    const shown = new Set(visibleUuids);
+    return selectedEntries.filter((e) => !shown.has(e.uuid)).length;
+  });
+  const allVisibleSelected = $derived(
+    visible.length > 0 && visible.every((e) => selection.ids.has(e.uuid)),
+  );
+  const someVisibleSelected = $derived(visible.some((e) => selection.ids.has(e.uuid)));
+
+  const active = $derived(activeUuid ? (byUuid.get(activeUuid) ?? null) : null);
 
   function folderPath(entry: IndexEntry | null): string {
     if (!entry || entry.packId || !entry.folderId) return "";
@@ -79,9 +120,61 @@
   }
 
   function selectType(type: DocumentType) {
+    view = "browse";
     documentName = type;
     folderId = null;
     activeUuid = null;
+  }
+
+  function onRowClick(event: MouseEvent, entry: IndexEntry) {
+    selection.click(visibleUuids, entry.uuid, clickMode(event));
+    activeUuid = entry.uuid;
+  }
+
+  function toggleAllVisible() {
+    const ids = new Set(selection.ids);
+    if (allVisibleSelected) for (const uuid of visibleUuids) ids.delete(uuid);
+    else for (const uuid of visibleUuids) ids.add(uuid);
+    selection.set(ids);
+  }
+
+  function openTrashDialog() {
+    const trash = availableActions(selectedEntries, game.user.isGM).find((a) => a.action.id === "trash");
+    if (trash && !trash.reason) pending = trash;
+  }
+
+  function moveActive(delta: number, extend: boolean) {
+    if (!visible.length) return;
+    const index = activeUuid ? visibleUuids.indexOf(activeUuid) : -1;
+    const next = visibleUuids[Math.min(visible.length - 1, Math.max(0, index + delta))];
+    selection.click(visibleUuids, next, extend ? "range" : "single");
+    activeUuid = next;
+    listEl?.querySelector<HTMLElement>(`[data-uuid="${CSS.escape(next)}"]`)?.focus();
+  }
+
+  function onListKeydown(event: KeyboardEvent) {
+    if (pending) return;
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (ctrl && event.key.toLowerCase() === "a") {
+      event.preventDefault();
+      selection.set(new Set([...selection.ids, ...visibleUuids]));
+    } else if (event.key === "Escape" && selection.ids.size) {
+      event.preventDefault();
+      event.stopPropagation();
+      selection.clear();
+    } else if (event.key === "Delete" && selection.ids.size) {
+      event.preventDefault();
+      openTrashDialog();
+    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      moveActive(event.key === "ArrowDown" ? 1 : -1, event.shiftKey);
+    } else if (event.key === "Enter" && active) {
+      event.preventDefault();
+      openEntry(active);
+    } else if (event.key === " " && active) {
+      event.preventDefault();
+      selection.toggle(active.uuid);
+    }
   }
 
   function onDragStart(event: DragEvent, entry: IndexEntry) {
@@ -104,10 +197,11 @@
       {#each ["world", "compendia", "all"] as const as value}
         <button
           type="button"
-          class:active={scope === value}
+          class:active={scope === value && view === "browse"}
           onclick={() => {
             scope = value;
             folderId = null;
+            view = "browse";
           }}
         >
           {t(`Source.${value === "world" ? "World" : value === "compendia" ? "Compendia" : "All"}`)}
@@ -120,7 +214,7 @@
         <li>
           <button
             type="button"
-            class:active={documentName === type}
+            class:active={view === "browse" && documentName === type}
             onclick={() => selectType(type)}
           >
             <i class={DOCUMENT_ICONS[type]}></i>
@@ -129,9 +223,16 @@
           </button>
         </li>
       {/each}
+      <li class="an-trash-link">
+        <button type="button" class:active={view === "trash"} onclick={() => (view = "trash")}>
+          <i class="fa-solid fa-trash-can"></i>
+          <span>{t("Trash.Title")}</span>
+          <span class="an-count">{trashService.batches.reduce((sum, b) => sum + b.count, 0)}</span>
+        </button>
+      </li>
     </ul>
 
-    {#if scope === "world" && folders.length}
+    {#if view === "browse" && scope === "world" && folders.length}
       <div class="an-folders">
         <button
           type="button"
@@ -147,51 +248,104 @@
     {/if}
   </nav>
 
-  <section class="an-main">
-    <div class="an-searchbar">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="search" placeholder={t("Search.Placeholder")} bind:value={query} />
-      <span class="an-count">{t("Search.Count", { count: results.length })}</span>
-    </div>
+  {#if view === "trash"}
+    <TrashView />
+  {:else}
+    <section class="an-main">
+      <div class="an-searchbar">
+        <input
+          type="checkbox"
+          class="an-check"
+          title={t("Selection.ToggleVisible")}
+          checked={allVisibleSelected}
+          indeterminate={someVisibleSelected && !allVisibleSelected}
+          onchange={toggleAllVisible}
+        />
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" placeholder={t("Search.Placeholder")} bind:value={query} />
+        <span class="an-count">{t("Search.Count", { count: results.length })}</span>
+      </div>
 
-    {#if scope !== "world" && indexService.compendiaStatus === "loading"}
-      <p class="an-status"><i class="fa-solid fa-spinner fa-spin"></i> {t("Search.LoadingCompendia")}</p>
-    {/if}
+      {#if selectedEntries.length}
+        <ActionBar
+          entries={selectedEntries}
+          {hiddenCount}
+          onaction={(a) => (pending = a)}
+          onclear={() => selection.clear()}
+        />
+      {/if}
 
-    <ul class="an-results">
-      {#each results.slice(0, MAX_ROWS) as entry (entry.uuid)}
-        <li
-          class:active={entry.uuid === activeUuid}
-          draggable="true"
-          ondragstart={(e) => onDragStart(e, entry)}
-          onclick={() => (activeUuid = entry.uuid)}
-          ondblclick={() => openEntry(entry)}
-          onkeydown={(e) => e.key === "Enter" && openEntry(entry)}
-          tabindex="0"
-          role="option"
-          aria-selected={entry.uuid === activeUuid}
-        >
-          <img src={entry.img || "icons/svg/mystery-man.svg"} alt="" loading="lazy" />
-          <span class="an-name">{entry.name}</span>
-          {#if entry.subtype}
-            <span class="an-tag">{subtypeLabel(entry.documentName, entry.subtype)}</span>
-          {/if}
-          {#if entry.packId}
-            <span class="an-tag an-pack"><i class="fa-solid fa-book-atlas"></i></span>
-          {/if}
-        </li>
-      {/each}
-    </ul>
-    {#if results.length > MAX_ROWS}
-      <p class="an-status">{t("Search.Truncated", { count: MAX_ROWS })}</p>
-    {/if}
-  </section>
+      {#if scope !== "world" && indexService.compendiaStatus === "loading"}
+        <p class="an-status"><i class="fa-solid fa-spinner fa-spin"></i> {t("Search.LoadingCompendia")}</p>
+      {/if}
 
-  <Preview entry={active} folderPath={folderPath(active)} />
+      <ul
+        class="an-results"
+        role="listbox"
+        aria-multiselectable="true"
+        tabindex="-1"
+        bind:this={listEl}
+        onkeydown={onListKeydown}
+      >
+        {#each visible as entry (entry.uuid)}
+          {@const selected = selection.ids.has(entry.uuid)}
+          <!-- svelte-ignore a11y_click_events_have_key_events (clavier géré par la liste) -->
+          <li
+            data-uuid={entry.uuid}
+            class:active={entry.uuid === activeUuid}
+            class:selected
+            draggable="true"
+            ondragstart={(e) => onDragStart(e, entry)}
+            onclick={(e) => onRowClick(e, entry)}
+            ondblclick={() => openEntry(entry)}
+            tabindex="0"
+            role="option"
+            aria-selected={selected}
+          >
+            <input
+              type="checkbox"
+              class="an-check"
+              checked={selected}
+              tabindex="-1"
+              onclick={(e) => {
+                e.stopPropagation();
+                selection.toggle(entry.uuid);
+                activeUuid = entry.uuid;
+              }}
+            />
+            <img src={entry.img || "icons/svg/mystery-man.svg"} alt="" loading="lazy" />
+            <span class="an-name">{entry.name}</span>
+            {#if entry.subtype}
+              <span class="an-tag">{subtypeLabel(entry.documentName, entry.subtype)}</span>
+            {/if}
+            {#if entry.packId}
+              <span class="an-tag an-pack" title={game.packs.get(entry.packId)?.title}>
+                <i class="fa-solid fa-book-atlas"></i>
+              </span>
+            {/if}
+          </li>
+        {/each}
+      </ul>
+      {#if results.length > MAX_ROWS}
+        <p class="an-status">{t("Search.Truncated", { count: MAX_ROWS })}</p>
+      {/if}
+    </section>
+  {/if}
+
+  <Preview entry={view === "browse" ? active : null} folderPath={folderPath(active)} />
+
+  {#if pending}
+    <ActionDialog
+      availability={pending}
+      selectedCount={selectedEntries.length}
+      onclose={() => (pending = null)}
+    />
+  {/if}
 </div>
 
 <style>
   .an-navigator {
+    position: relative;
     display: grid;
     grid-template-columns: 220px 1fr 260px;
     height: 100%;
@@ -228,6 +382,11 @@
     margin: 0 0 0.5rem;
     padding: 0;
   }
+  .an-trash-link {
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid var(--an-border);
+  }
   .an-types button,
   .an-all-folders {
     display: flex;
@@ -256,14 +415,20 @@
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    padding-left: 0.4rem;
   }
-  .an-searchbar input {
+  .an-searchbar input[type="search"] {
     flex: 1;
+  }
+  .an-check {
+    flex: none;
+    margin: 0;
   }
   .an-results {
     list-style: none;
     margin: 0;
     padding: 0;
+    outline: none;
   }
   .an-results li {
     display: flex;
@@ -272,12 +437,16 @@
     padding: 0.2rem 0.4rem;
     border-radius: 4px;
     cursor: pointer;
+    user-select: none;
   }
   .an-results li:hover {
     background: var(--an-hover-bg);
   }
-  .an-results li.active {
+  .an-results li.selected {
     background: var(--an-accent-bg);
+  }
+  .an-results li.active {
+    outline: 1px solid var(--an-accent);
   }
   .an-results img {
     width: 32px;

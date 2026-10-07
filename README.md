@@ -13,6 +13,15 @@ La conception complète et la feuille de route sont dans
 - Recherche floue, insensible aux accents et à la casse.
 - Aperçu ; ouverture de la fiche par double-clic ou Entrée.
 - Glisser une ligne vers le canevas, une fiche ou un journal.
+- Sélection multiple (clic, `Ctrl`, `Maj`, `Ctrl+A`, cases à cocher) qui
+  persiste quand on change de filtre.
+- Actions groupées : supprimer (vers la corbeille), déplacer vers un
+  dossier, dupliquer, changer les droits par défaut, importer depuis un
+  compendium (copie, le compendium n'est jamais modifié).
+- Avertissements avant suppression : tokens sur des scènes, liens dans des
+  journaux, acteurs de joueurs, scène active.
+- Corbeille restaurable (totalement ou en partie, identifiants d'origine
+  conservés), purge automatique réglable (30 jours par défaut).
 
 ## Ouvrir le navigateur
 - Raccourci `Ctrl+Maj+A` (modifiable dans les contrôles) ;

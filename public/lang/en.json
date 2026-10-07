@@ -1,10 +1,20 @@
 {
   "ARCHIVE_NAVIGATOR": {
     "Title": "Archive Navigator",
-    "Keybindings": { "Open": "Open Archive Navigator" },
-    "Errors": { "GMOnly": "Archive Navigator is GM only." },
-    "Source": { "World": "World", "Compendia": "Compendiums", "All": "All" },
-    "Folders": { "All": "All folders" },
+    "Keybindings": {
+      "Open": "Open Archive Navigator"
+    },
+    "Errors": {
+      "GMOnly": "Archive Navigator is GM only."
+    },
+    "Source": {
+      "World": "World",
+      "Compendia": "Compendiums",
+      "All": "All"
+    },
+    "Folders": {
+      "All": "All folders"
+    },
     "Search": {
       "Placeholder": "Search…",
       "Count": "{count} result(s)",
@@ -18,6 +28,61 @@
       "Open": "Open",
       "View": "View",
       "Empty": "Select an entry to preview it."
+    },
+    "Settings": {
+      "TrashRetention": {
+        "Name": "Trash retention (days)",
+        "Hint": "Older batches are permanently deleted on startup. 0 = never."
+      }
+    },
+    "Selection": {
+      "Count": "{count} selected",
+      "Hidden": "{count} hidden by filters",
+      "HiddenHint": "These entries stay selected even though they are not shown.",
+      "Clear": "Clear selection",
+      "ToggleVisible": "Select / deselect shown results"
+    },
+    "Actions": {
+      "Trash": "Delete",
+      "Move": "Move",
+      "Duplicate": "Duplicate",
+      "Ownership": "Ownership",
+      "Import": "Import",
+      "NotApplicable": "No selected entry is concerned.",
+      "SingleTypeRequired": "Select a single document type for this action.",
+      "CopyName": "{name} (copy)",
+      "Done": "{action}: {count} entry(ies) processed.",
+      "Failed": "{action}: the operation failed, see the console."
+    },
+    "Dialog": {
+      "Cancel": "Cancel",
+      "Affected": "{count} entry(ies) affected.",
+      "Skipped": "{count} selected entry(ies) skipped as not applicable (e.g. compendium entries).",
+      "UsageWarning": "Some entries are still in use:",
+      "TrashHint": "Entries go to the trash and can be restored.",
+      "ChooseFolder": "Destination folder ({type}):",
+      "FilterFolders": "Filter folders…",
+      "Root": "Root (no folder)",
+      "DefaultOwnership": "Default ownership for all players:"
+    },
+    "Usage": {
+      "Tokens": "{count} token(s) on scenes",
+      "PlayerOwned": "owned by a player",
+      "ActiveScene": "active scene",
+      "Links": "linked in {count} journal page(s)"
+    },
+    "Trash": {
+      "Title": "Trash",
+      "PackLabel": "Archive Navigator — Trash",
+      "BatchName": "Trash — {date} — {count} entry(ies)",
+      "Nothing": "The trash is empty.",
+      "Empty": "Empty trash",
+      "RestoreAll": "Restore all",
+      "RestoreSelected": "Restore selection ({count})",
+      "Restored": "{count} entry(ies) restored.",
+      "RestoreFailed": "Restore failed, see the console.",
+      "Purge": "Delete permanently",
+      "PurgeConfirm": "{count} entry(ies) will be permanently deleted. This cannot be undone."
     }
   }
 }

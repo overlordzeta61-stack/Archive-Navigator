@@ -4,6 +4,9 @@
   --an-accent: var(--color-warm-1, #ff6400);
   --an-accent-bg: rgba(255, 100, 0, 0.18);
   --an-hover-bg: rgba(127, 127, 127, 0.15);
+  --an-danger: #c0392b;
+  --an-danger-bg: rgba(192, 57, 43, 0.18);
+  --an-modal-bg: var(--background, var(--color-cool-5, #1d1d22));
 }
 
 .archive-navigator .window-content {

@@ -1,10 +1,20 @@
 {
   "ARCHIVE_NAVIGATOR": {
     "Title": "Archive Navigator",
-    "Keybindings": { "Open": "Ouvrir Archive Navigator" },
-    "Errors": { "GMOnly": "Archive Navigator est réservé au MJ." },
-    "Source": { "World": "Monde", "Compendia": "Compendiums", "All": "Tout" },
-    "Folders": { "All": "Tous les dossiers" },
+    "Keybindings": {
+      "Open": "Ouvrir Archive Navigator"
+    },
+    "Errors": {
+      "GMOnly": "Archive Navigator est réservé au MJ."
+    },
+    "Source": {
+      "World": "Monde",
+      "Compendia": "Compendiums",
+      "All": "Tout"
+    },
+    "Folders": {
+      "All": "Tous les dossiers"
+    },
     "Search": {
       "Placeholder": "Rechercher…",
       "Count": "{count} résultat(s)",
@@ -18,6 +28,61 @@
       "Open": "Ouvrir",
       "View": "Afficher",
       "Empty": "Sélectionnez un élément pour l'aperçu."
+    },
+    "Settings": {
+      "TrashRetention": {
+        "Name": "Conservation de la corbeille (jours)",
+        "Hint": "Les lots plus anciens sont supprimés définitivement au démarrage. 0 = jamais."
+      }
+    },
+    "Selection": {
+      "Count": "{count} sélectionné(s)",
+      "Hidden": "dont {count} hors filtre",
+      "HiddenHint": "Ces éléments restent sélectionnés même s'ils ne sont pas affichés.",
+      "Clear": "Vider la sélection",
+      "ToggleVisible": "Sélectionner / désélectionner les résultats affichés"
+    },
+    "Actions": {
+      "Trash": "Supprimer",
+      "Move": "Déplacer",
+      "Duplicate": "Dupliquer",
+      "Ownership": "Droits",
+      "Import": "Importer",
+      "NotApplicable": "Aucun élément sélectionné n'est concerné.",
+      "SingleTypeRequired": "Sélectionnez un seul type de document pour cette action.",
+      "CopyName": "{name} (copie)",
+      "Done": "{action} : {count} élément(s) traité(s).",
+      "Failed": "{action} : l'opération a échoué, voir la console."
+    },
+    "Dialog": {
+      "Cancel": "Annuler",
+      "Affected": "{count} élément(s) concerné(s).",
+      "Skipped": "{count} élément(s) sélectionné(s) ignoré(s) car non concernés (par exemple des entrées de compendium).",
+      "UsageWarning": "Certains éléments sont encore utilisés :",
+      "TrashHint": "Les éléments vont dans la corbeille et peuvent être restaurés.",
+      "ChooseFolder": "Dossier de destination ({type}) :",
+      "FilterFolders": "Filtrer les dossiers…",
+      "Root": "Racine (aucun dossier)",
+      "DefaultOwnership": "Droit par défaut pour tous les joueurs :"
+    },
+    "Usage": {
+      "Tokens": "{count} token(s) sur des scènes",
+      "PlayerOwned": "possédé par un joueur",
+      "ActiveScene": "scène active",
+      "Links": "lié dans {count} page(s) de journal"
+    },
+    "Trash": {
+      "Title": "Corbeille",
+      "PackLabel": "Archive Navigator — Corbeille",
+      "BatchName": "Corbeille — {date} — {count} élément(s)",
+      "Nothing": "La corbeille est vide.",
+      "Empty": "Vider la corbeille",
+      "RestoreAll": "Tout restaurer",
+      "RestoreSelected": "Restaurer la sélection ({count})",
+      "Restored": "{count} élément(s) restauré(s).",
+      "RestoreFailed": "La restauration a échoué, voir la console.",
+      "Purge": "Supprimer définitivement",
+      "PurgeConfirm": "{count} élément(s) seront supprimés définitivement. Cette opération est irréversible."
     }
   }
 }

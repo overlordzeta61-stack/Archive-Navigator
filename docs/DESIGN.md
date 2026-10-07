@@ -72,6 +72,13 @@ endroit.
 - Opérations par lots (`deleteDocuments` / `updateDocuments` par paquets).
 - Les entrées de compendium sont sélectionnables, mais seules les actions
   non destructrices (import, comparaison) leur sont proposées.
+- Clavier : `Ctrl+A` ajoute les résultats affichés, `Échap` vide la
+  sélection, `Suppr` ouvre la mise en corbeille, flèches (+ `Maj`) pour se
+  déplacer (et étendre), `Espace` coche, `Entrée` ouvre la fiche.
+- Les éléments sélectionnés restent sélectionnés quand on change de filtre ;
+  la barre indique combien sont masqués.
+- D'autres modules (ou la future version joueurs) peuvent ajouter des
+  actions via `api.registerAction`.
 
 ### 4.3 Corbeille (étape 3)
 - Un compendium du monde de type **Adventure**, créé à la première
@@ -151,7 +158,11 @@ peuvent être supprimés.
    raccourci `Ctrl+Maj+A`, bouton dans la barre latérale, IndexService.
 2. ✅ **Navigation de base** : types, dossiers, portée, recherche floue,
    aperçu, ouverture, glisser une ligne.
-3. Sélection multiple, barre d'actions, corbeille.
+3. ✅ **Sélection multiple, barre d'actions, corbeille** : clic, Ctrl, Maj,
+   Ctrl+A, Échap, Suppr, flèches ; actions Supprimer (corbeille), Déplacer,
+   Dupliquer, Droits, Importer (depuis un compendium) ; avertissements
+   d'utilisation ; vue Corbeille avec restauration totale ou partielle et
+   purge automatique.
 4. Glisser-déposer complet.
 5. Doublons.
 6. Recherche avancée avec l'adaptateur dnd5e.
